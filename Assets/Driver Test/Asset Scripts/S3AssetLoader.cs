@@ -30,13 +30,14 @@ public static class S3AssetLoader
 			{
 				responseObject.Response.S3Objects.ForEach((o) =>
 				{
-						FileEntry entry = new FileEntry(o.Key, GetURL(S3BucketName, o.Key), o.Size, FileEntry.Status.Unmodified, (DateTime)o.LastModified, (DateTime)o.LastModified);
-						FileList.Add(entry.path, entry);
+					FileEntry entry = new FileEntry(o.Key, GetURL(S3BucketName, o.Key), o.Size, FileEntry.Status.Unmodified, (DateTime)o.LastModified, (DateTime)o.LastModified);
+					FileList.Add(entry.path, entry);
 				});
 
-					if (S3AssetStructure.OnAsyncRetrieved != null)
-						S3AssetStructure.OnAsyncRetrieved(FileList);
+				if (S3AssetStructure.OnAsyncRetrieved != null)
+					S3AssetStructure.OnAsyncRetrieved(FileList);
 			} 
+
 			catch (AmazonS3Exception e) 
 			{
 				throw e;

@@ -38,24 +38,25 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 	public delegate void OnAsyncRetrievedEvent(Dictionary<string, FileEntry> fileEntryDictionary);
 	public static OnAsyncRetrievedEvent OnAsyncRetrieved;
 
-	void OnAsyncRetrievedTest(Dictionary<string, FileEntry> fileEntryDictionary)
+	public static void OnAsyncRetrievedTest(Dictionary<string, FileEntry> fileEntryDictionary)
 	{
 		S3FileList = fileEntryDictionary;
+		Debug.Log ("Count: " + S3FileList.Count);
 	}
 
-	//void start()
-	//{
-	//	UnityInitializer.AttachToGameObject (this.gameObject);
-	//	AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
-	//}
-
-	void awake()
+	void Awake()
 	{
 		UnityInitializer.AttachToGameObject (this.gameObject);
 		AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
 
 		_S3FileList = new Dictionary<string, FileEntry> ();
 	}
+
+	void Start()
+	{
+		OnAsyncRetrieved += new OnAsyncRetrievedEvent (OnAsyncRetrievedTest);
+	}
+
 	#endregion
 
 	#region S3 Initialization
@@ -106,16 +107,6 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 	public static void LoadFiles()
 	{
 		S3FileList = S3AssetLoader.S3ListObjects (Client, S3BucketName);
-		if (S3FileList == null || S3FileList.Count == 0)
-			Debug.Log ("ERROR");
-
-		else 
-		{
-			foreach (KeyValuePair<string, FileEntry> temp in S3FileList) 
-			{
-				Debug.Log ("FileName: " + temp.Value.fileName);
-			}
-		}
 	}
 
 	public static void S3GetObjects(List<FileEntry> LocalModifiedList)
