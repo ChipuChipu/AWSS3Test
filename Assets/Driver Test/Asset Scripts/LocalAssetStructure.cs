@@ -8,6 +8,7 @@ using AssetStruct;
 
 public class LocalAssetStructure : Singleton<LocalAssetStructure>
 {
+	#region Initialization
 	[RuntimeInitializeOnLoadMethodAttribute (RuntimeInitializeLoadType.AfterSceneLoad)]
 	public static void InitializeStructure()
 	{
@@ -17,21 +18,23 @@ public class LocalAssetStructure : Singleton<LocalAssetStructure>
 	[ReadOnly]
 	public int ModifiedFileListCount = 0;
 	[ReadOnly]
-	public int FileListCount = 0;
+	public int LocalFileListCount = 0;
 
-	private Dictionary<string, FileEntry> _FileList;
-	static Dictionary<string, FileEntry> FileList{
-		get{ return Instance._FileList; }
+	private Dictionary<string, FileEntry> _LocalFileList;
+	static Dictionary<string, FileEntry> LocalFileList
+	{
+		get{ return Instance._LocalFileList; }
 
 		set
 		{
-			Instance.FileListCount = value.Count;
-			Instance._FileList = value;
+			Instance.LocalFileListCount = value.Count;
+			Instance._LocalFileList = value;
 		}
 	}
 
 	private List<FileEntry> _ModifiedFileList;
-	static List<FileEntry> ModifiedFileList{
+	static List<FileEntry> ModifiedFileList
+	{
 		get{ return Instance._ModifiedFileList; }
 		set
 		{ 
@@ -40,35 +43,41 @@ public class LocalAssetStructure : Singleton<LocalAssetStructure>
 		}
 	}
 
-	public static void LoadInitialFiles()
+	void Awake()
 	{
-		FileList = LocalAssetLoader.InitializeFileList ();
+		_ModifiedFileList = new List<FileEntry> ();
+		_LocalFileList = new Dictionary<string, FileEntry> ();
 	}
 
-	public static Dictionary<string,FileEntry> DebugLoadDummyFileList()
-	{
-		return LocalAssetLoader.InitializeFileList ();
-	}
+	#endregion
 
+	#region Core Methods
+	public static void InitializeFiles()
+	{
+		LocalFileList = LocalAssetLoader.InitializeFileList ();
+	}
+		
 	public static void LoadFiles()
 	{
-		ModifiedFileList = LocalAssetLoader.LoadFiles (FileList);
+		ModifiedFileList = LocalAssetLoader.LoadFiles (LocalFileList);
 	}
 
 	public static void UpdateFileList()
 	{
-		FileList = LocalAssetLoader.UpdateFileList (ModifiedFileList, FileList);
+		LocalAssetLoader.UpdateFileList (ModifiedFileList, LocalFileList);
+		ModifiedFileList.Clear ();
 	}
 		
-	public static void CompareDictionaries(Dictionary<string, FileEntry> newFileList)
+	public static void CompareDictionaries(Dictionary<string, FileEntry> S3FileList)
 	{
-		ModifiedFileList = LocalAssetLoader.CompareDictionaries (FileList, newFileList);
+		ModifiedFileList = LocalAssetLoader.CompareDictionaries (LocalFileList, S3FileList);
 	}
+	#endregion
 
-	#region Helper Functions
-	public static void UnloadAllFiles()
+	#region Helper Methods
+	public static void UnloadAllLists()
 	{
-		FileList.Clear ();
+		LocalFileList.Clear ();
 		ModifiedFileList.Clear ();
 	}
 
@@ -77,15 +86,9 @@ public class LocalAssetStructure : Singleton<LocalAssetStructure>
 		return ModifiedFileList;
 	}
 
-	public static Dictionary<string, FileEntry> GetFileList()
+	public static Dictionary<string, FileEntry> GetLocalFileList()
 	{
-		return FileList;
+		return LocalFileList;
 	}
 	#endregion
-
-	void Awake()
-	{
-		_ModifiedFileList = new List<FileEntry> ();
-		_FileList = new Dictionary<string, FileEntry> ();
-	}
 }

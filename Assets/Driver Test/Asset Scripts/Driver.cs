@@ -10,21 +10,46 @@ public class Driver : MonoBehaviour
 	{
 		UnityInitializer.AttachToGameObject (this.gameObject);
 		AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
-
-		// Initialize S3's FileList
-		S3AssetStructure.LoadFiles();
-		// Initialize Local FileList
-		LocalAssetStructure.LoadInitialFiles();
+		// Update Local FileList to most Recent
+		LocalAssetStructure.InitializeFiles();
+		// Update S3 FileList to most Recent
+		S3AssetStructure.LoadObjects();
+		// Start Coroutine for 5 Second Delayed Sync Updates
+		StartCoroutine (S3LocalTest());
 	}
 
 	void Update()
 	{
-		if (Input.GetKey ("up")) {
-			LocalAssetStructure.CompareDictionaries (S3AssetStructure.GetS3FileList ());
+		
+	}
+
+
+
+	IEnumerator S3LocalTest()
+	{
+		while (true) 
+		{
+			yield return new WaitForSecondsRealtime (5f);
+			test ();
+
 		}
-			
-		else if (Input.GetKey("down"))
-			// Download Necessary Files from S3
-			S3AssetStructure.S3GetObjects(LocalAssetStructure.GetModifiedFileList());
+	}
+
+	void test()
+	{
+		foreach (KeyValuePair<string, FileEntry> entry in LocalAssetStructure.GetLocalFileList()) {
+			Debug.Log ("entry.Key: " + entry.Key + " || File Name: " + entry.Value.FileName + " || File Status: " + entry.Value.State + " || " + entry.Value.FileSize);
+		}
+
+		// Generate a manifest of all Modified Files in Local
+		LocalAssetStructure.LoadFiles();
+		// Perform Updates to LocalFileList
+		LocalAssetStructure.UpdateFileList();
+		// Compare Dictionaries with Local and S3 File Lists
+		LocalAssetStructure.CompareDictionaries(S3AssetStructure.GetS3FileList());
+		// Perform Updates to LocalFileList by Downloading, Uploading, or Deleting
+		S3AssetStructure.S3UpdateLocalDirectory(LocalAssetStructure.GetModifiedFileList());
+		// Update S3 FileList to most Recent
+		S3AssetStructure.LoadObjects();
 	}
 }
