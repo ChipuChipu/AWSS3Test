@@ -23,6 +23,7 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 
 	[ReadOnly]
 	public int S3FileListCount = 0;
+	public int FailedFileListCount = 0;
 
 	private Dictionary<string, FileEntry> _S3FileList;
 	static Dictionary<string, FileEntry> S3FileList
@@ -41,13 +42,19 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 	public static void OnAsyncRetrievedTest(Dictionary<string, FileEntry> fileEntryDictionary)
 	{
 		S3FileList = fileEntryDictionary;
-		Debug.Log ("Count: " + S3FileList.Count);
+
+		if (OnDictionaryAssigned != null)
+			OnDictionaryAssigned ();
 	}
+
+	public delegate void DictionaryAssignedEvent();
+	public static DictionaryAssignedEvent OnDictionaryAssigned;
+
 
 	void Awake()
 	{
-		UnityInitializer.AttachToGameObject (this.gameObject);
-		AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
+		//UnityInitializer.AttachToGameObject (this.gameObject);
+		//AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
 
 		_S3FileList = new Dictionary<string, FileEntry> ();
 	}
@@ -61,7 +68,7 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 
 	#region S3 Initialization
 	public static string S3BucketName = "chipuchiputest";
-	public static string IdentityPoolId = "us-east-1:e7825514-f4b7-42db-bb26-fd30c66b224";
+	public static string IdentityPoolId = "us-east-1:e7825514-f4b7-42db-bb26-fd30c66b2245";
 	public static string CognitoIdentityRegion = "us-east-1";
 	private static RegionEndpoint _CognitoIdentityRegion
 	{
@@ -96,26 +103,69 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 	}
 	#endregion
 
-	#region Getters and Setters
+	#region Core Methods
+	// Populates S3AssetStructure's FileList will all existing objects on the S3 Bucket
+	public static void LoadObjects()
+	{
+		S3AssetLoader.S3LoadObjects (Client, S3BucketName);
+	}
+
+	// Downloads and Uploads all files marked respectively in the LocalModifiedList from LocalAssetStructure
+	public static void S3UpdateLocalDirectory(List<FileEntry> LocalModifiedList)
+	{
+
+		if (LocalModifiedList.Count == 0 || LocalModifiedList == null)
+			return;
+
+		foreach (FileEntry entry in LocalModifiedList) 
+		{
+			if (entry.State == FileEntry.Status.Download) 
+			{
+				Debug.Log ("Downloading: " + entry.FileName + " || File State: " + entry.State + " || File Path: " + entry.Path);
+				S3GetObject (entry.Path, entry.FileName);		
+			}
+
+		/*
+			else if (entry.State == FileEntry.Status.Upload)
+			{
+				Debug.Log ("Uploading: " + entry.FileName + " || File State: " + entry.State);
+				S3PostFile (entry.Path, entry.FileName);
+			}
+		*/
+		}
+	}
+
+	// Downloads a single object from S3 onto the Local Directory
+	public static void S3GetObject(string destinationPath, string fileName)
+	{
+		S3AssetLoader.GetObject (Client, S3BucketName, destinationPath, fileName);
+	}
+
+	// Uploads a single file from Local Directory onto the S3 Cloud
+	public static void S3PostFile(string path, string fileName)
+	{
+		S3AssetLoader.PostFile (Client, S3BucketName, path, fileName);
+	}
+	#endregion
+
+	#region Helper Methods
+	public static void UnloadS3FileList()
+	{
+		S3FileList.Clear ();
+	}
+		
+	// Returns a Dictionary S3FileList
 	public static Dictionary<string, FileEntry> GetS3FileList()
 	{
 		return S3FileList;
 	}
 	#endregion
 
-
-	public static void LoadFiles()
+	#region Extra Methods (Not Part of Core)
+	// Uploads every file in the specified location
+	public static void S3PostAllFiles()
 	{
-		S3FileList = S3AssetLoader.S3ListObjects (Client, S3BucketName);
+		S3AssetLoader.S3PostAllFiles (Client, S3BucketName);
 	}
-
-	public static void S3GetObjects(List<FileEntry> LocalModifiedList)
-	{
-		S3AssetLoader.S3GetObjects (Client, S3BucketName, LocalModifiedList);
-	}
-
-	public static void S3PostObjects()
-	{
-		S3AssetLoader.S3PostFiles (Client, S3BucketName);
-	}
+	#endregion
 }

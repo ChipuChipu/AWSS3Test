@@ -7,23 +7,23 @@ namespace AssetStruct
 {	
 	public struct FileEntry
 	{
-		public enum Status {Unmodified, Added, Modified, Removed}
+		public enum Status {Unmodified, Added, Modified, Removed, Download, Upload}
 
-		public string fileName;
-		public string path;
-		public long fileSize;
-		public Status state;
-		public DateTime dTime;
-		public DateTime cTime;
+		public string FileName;
+		public string Path;
+		public long FileSize;
+		public Status State;
+		public DateTime ModifiedTime;
+		public DateTime CreationTime;
 
-		public FileEntry(string n = null, string p = null, long fs = -1, Status s = Status.Unmodified, DateTime dt = default(DateTime), DateTime ct = default(DateTime))
+		public FileEntry(string n = null, string p = null, long fs = -1, Status s = Status.Unmodified, DateTime mt = default(DateTime), DateTime ct = default(DateTime))
 		{
-			fileName = n;
-			path = p;
-			fileSize = fs;
-			state = s;
-			dTime = dt;
-			cTime = ct;
+			FileName = n;
+			Path = p;
+			FileSize = fs;
+			State = s;
+			ModifiedTime = mt;
+			CreationTime = ct;
 		} // End Constructor
 
 		public static bool operator == (FileEntry fe1, FileEntry fe2)
@@ -43,14 +43,14 @@ namespace AssetStruct
 
 			FileEntry fe = (FileEntry)obj;
 
-			return ((fe.fileName == fileName)  && (fe.fileSize == fileSize)  && (fe.dTime == dTime));
+			return ((fe.FileName == FileName)  && (fe.FileSize == FileSize)  && (fe.ModifiedTime == ModifiedTime));
 		}
 
 		public override int GetHashCode()
 		{
 			int hash = 19;
-			hash = hash * 23 + fileName.GetHashCode ();
-			hash = hash * 23 + path.GetHashCode ();
+			hash = hash * 23 + FileName.GetHashCode ();
+			hash = hash * 23 + Path.GetHashCode ();
 			return hash;
 		}
 
