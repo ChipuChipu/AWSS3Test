@@ -27,15 +27,10 @@ public class Driver : MonoBehaviour
 
 	IEnumerator S3LocalTest()
 	{
-		while (true) 
-		{
-			yield return new WaitForSecondsRealtime (5f);
-			test ();
-
-		}
+        yield return test();
 	}
 
-	void test()
+    IEnumerator test()
 	{
 		foreach (KeyValuePair<string, FileEntry> entry in LocalAssetStructure.GetLocalFileList()) {
 			Debug.Log ("entry.Key: " + entry.Key + " || File Name: " + entry.Value.FileName + " || File Status: " + entry.Value.State + " || " + entry.Value.FileSize);
@@ -45,11 +40,16 @@ public class Driver : MonoBehaviour
 		LocalAssetStructure.LoadFiles();
 		// Perform Updates to LocalFileList
 		LocalAssetStructure.UpdateFileList();
+
+        yield return new WaitForSeconds(5f);
+
 		// Compare Dictionaries with Local and S3 File Lists
 		LocalAssetStructure.CompareDictionaries(S3AssetStructure.GetS3FileList());
 		// Perform Updates to LocalFileList by Downloading, Uploading, or Deleting
 		S3AssetStructure.S3UpdateLocalDirectory(LocalAssetStructure.GetModifiedFileList());
 		// Update S3 FileList to most Recent
 		S3AssetStructure.LoadObjects();
+
+        yield return new WaitForSeconds(10f);
 	}
 }

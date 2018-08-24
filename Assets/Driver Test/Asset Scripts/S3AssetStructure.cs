@@ -113,14 +113,14 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 		{
 			if (entry.State == FileEntry.Status.Download) 
 			{
-				Debug.Log ("Downloading: " + entry.FileName);
+                Debug.Log ("Downloading: " + entry.FileName + " " + entry.Path);
 				S3GetObject (entry.Path, entry.FileName);		
 			}
 			
 			else if (entry.State == FileEntry.Status.Upload)
 			{
-				Debug.Log ("Uploading: " + entry.FileName);
-				S3PostFile (entry.Path, entry.FileName);
+				//Debug.Log ("Uploading: " + entry.FileName);
+				//S3PostFile (entry.Path, entry.FileName);
 			}
 		}
 	}

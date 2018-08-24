@@ -159,7 +159,7 @@ public static class LocalAssetLoader
 					// Add a new entry designating for Download
 					newEntry = entryPair.Value;
 					newEntry.State = FileEntry.Status.Download;
-					newEntry.Path = "C:\\Users\\Joshu\\Desktop\\S3LocalTest\\" + newEntry.FileName;
+                    newEntry.Path = Application.persistentDataPath + "/" + newEntry.FileName;
 					modifiedFileList.Add (newEntry);
 
 					// Revert LocalFileList's Status back to Unmodified
@@ -169,12 +169,12 @@ public static class LocalAssetLoader
 			}
 
 			// Else the file exists on S3 and does not exist on Local
-			else if ((!LocalFileList.ContainsKey (entryPair.Key)) && (LocalFileList [entryPair.Key].State == FileEntry.Status.Modified)) 
+            else if ((!LocalFileList.ContainsKey (entryPair.Key)))
 			{
 				// Add a new entry designating for Download
 				newEntry = entryPair.Value;
 				newEntry.State = FileEntry.Status.Download;
-				newEntry.Path = "C:\\Users\\Joshu\\Desktop\\S3LocalTest\\" + newEntry.FileName;
+                newEntry.Path = Application.persistentDataPath + "/"  + newEntry.FileName;
 				modifiedFileList.Add (newEntry);
 
 				// Revert LocalFileList's Status back to Unmodified
@@ -183,6 +183,7 @@ public static class LocalAssetLoader
 			}
 		}
 
+        /*
 		// Check if the File exists on Local but not on S3
 		foreach (string fileName in removedFileList)
 		{
@@ -194,6 +195,7 @@ public static class LocalAssetLoader
 				LocalFileList.Remove (fileName);
 			}
 		}
+        */
 
 		return modifiedFileList;
 	}
@@ -204,8 +206,8 @@ public static class LocalAssetLoader
 	{
 		//Directory.CreateDirectory (Application.persistentDataPath + "Dump");
 		//return Directory.GetFiles(Application.persistentDataPath + "Dump", "*.*", SearchOption.AllDirectories);
-		Directory.CreateDirectory("C:\\Users\\Joshu\\Desktop\\S3LocalTest");
-		return Directory.GetFiles ("C:\\Users\\Joshu\\Desktop\\S3LocalTest", "*.*");
+        Directory.CreateDirectory(Application.persistentDataPath);
+        return Directory.GetFiles (Application.persistentDataPath, "*.*");
 	}
 	#endregion
 }
