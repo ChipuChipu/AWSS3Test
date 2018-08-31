@@ -22,7 +22,11 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 	}
 
 	[ReadOnly]
-	public int S3FileListCount = 0;
+	public int S3FileListCount = 0;	
+
+	// Should add some checks to see if these locations actually exist
+	public static string DirectoryPath = "C:\\Users\\Joshu\\Desktop\\S3LocalTest";	// Local Directory used for checks. (Ignores all files not in the directory)
+	public static string CachePath = "C:\\Users\\Joshu\\Desktop\\S3LocalCache";		// Files currently being downloaded are stored in a temporary file called the Cache
 
 	private Dictionary<string, FileEntry> _S3FileList;
 	static Dictionary<string, FileEntry> S3FileList
@@ -43,10 +47,29 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 		S3FileList = fileEntryDictionary;
 	}
 
+	// Note: Both cachePath and destinationPath have the requirement of the Path also including the filename of the downloaded file
+	public delegate void OnAsyncDownloadedEvent(string fileName);
+	public static OnAsyncDownloadedEvent OnAsyncDownloaded;
+
+	// In Theory <Needs Testing>: On a completed S3 Download of a file, the file is moved from one folder to another
+	/*
+        How do I preserve the unique/specific filename on the delegate call from S3GetObject
+
+     */
+
+	public static void OnAsyncDownloadedFile(string fileName)
+	{
+		if (File.Exists(CachePath + fileName))
+		{
+			File.Copy(CachePath, DirectoryPath, true);
+			File.Delete(CachePath + fileName);	
+		}
+	}
+
 	void Awake()
 	{
 		//UnityInitializer.AttachToGameObject (this.gameObject);
-		//AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
+		//AWSConfigs.Http = AWSConfigs.HttpClientOption.UnityWebRequest;
 
 		_S3FileList = new Dictionary<string, FileEntry> ();
 	}
@@ -71,7 +94,7 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 	{
 		get { return RegionEndpoint.GetBySystemName (S3Region); }
 	}
-		
+
 	private static AWSCredentials _credentials;
 	private static AWSCredentials Credentials
 	{
@@ -113,15 +136,17 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 		{
 			if (entry.State == FileEntry.Status.Download) 
 			{
-				Debug.Log ("Downloading: " + entry.FileName);
+				Debug.Log ("Downloading: " + entry.FileName + " || File State: " + entry.State + " || File Path: " + entry.Path);
 				S3GetObject (entry.Path, entry.FileName);		
 			}
-			
+
+			/*
 			else if (entry.State == FileEntry.Status.Upload)
 			{
-				Debug.Log ("Uploading: " + entry.FileName);
+				Debug.Log ("Uploading: " + entry.FileName + " || File State: " + entry.State);
 				S3PostFile (entry.Path, entry.FileName);
 			}
+		*/
 		}
 	}
 
@@ -143,7 +168,7 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 	{
 		S3FileList.Clear ();
 	}
-		
+
 	// Returns a Dictionary S3FileList
 	public static Dictionary<string, FileEntry> GetS3FileList()
 	{

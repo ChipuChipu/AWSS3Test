@@ -17,6 +17,7 @@ public class LocalAssetStructure : Singleton<LocalAssetStructure>
 
 	[ReadOnly]
 	public int ModifiedFileListCount = 0;
+
 	[ReadOnly]
 	public int LocalFileListCount = 0;
 

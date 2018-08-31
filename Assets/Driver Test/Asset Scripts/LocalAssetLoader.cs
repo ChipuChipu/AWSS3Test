@@ -20,20 +20,20 @@ public static class LocalAssetLoader
 			try
 			{
 				localFileList.Add (Path.GetFileName (path), new FileEntry 
-				{
+					{
 						FileName = Path.GetFileName(path),
 						Path = path,
 						FileSize = new FileInfo(path).Length,
 						State = FileEntry.Status.Unmodified,
 						ModifiedTime = File.GetLastWriteTime(path),
 						CreationTime = File.GetCreationTime(path)
-				});
+					});
 			}
 			catch(Exception e) {
 				throw e;
 			}
 		}
-			
+
 		return localFileList;
 	}
 	#endregion
@@ -42,48 +42,50 @@ public static class LocalAssetLoader
 	// Generates a list of files that contain all modified files.
 	public static List<FileEntry> LoadFiles(Dictionary<string, FileEntry> LocalFileList)
 	{
-		Dictionary<string, FileEntry> currentFileList = InitializeFileList ();
-		IEnumerable oldFiles = LocalFileList.Keys.Except (currentFileList.Keys).ToList();
-		List<FileEntry> modifiedFileList = new List<FileEntry> ();
-		List<string> removedFileList = oldFiles.Cast<string> ().ToList ();
-		FileEntry newEntry = new FileEntry ();
+		Dictionary<string, FileEntry> currentFileList = InitializeFileList();
+		IEnumerable oldFiles = LocalFileList.Keys.Except(currentFileList.Keys).ToList();
+		List<FileEntry> modifiedFileList = new List<FileEntry>();
+		List<string> removedFileList = oldFiles.Cast<string>().ToList();
+		FileEntry newEntry = new FileEntry();
 
 		// Go through all found files in the most recent file list
-		foreach (KeyValuePair<string, FileEntry> entryPair in currentFileList) 
+		foreach (KeyValuePair<string, FileEntry> entryPair in currentFileList)
 		{
 			// Check if the file exists in both lists
-			if (LocalFileList.ContainsKey (entryPair.Key)) 
+			if (LocalFileList.ContainsKey(entryPair.Key))
 			{
 				// Check for Modification
-				if (entryPair.Value.FileSize != LocalFileList [entryPair.Key].FileSize) 
+				if (entryPair.Value.FileSize != LocalFileList[entryPair.Key].FileSize)
 				{
-					Debug.Log ("Modified File Flagged!");
+					Debug.Log("<LoadFiles> Modified File Flagged! <File: " + entryPair.Key + ">");
 					newEntry = entryPair.Value;
 					newEntry.State = FileEntry.Status.Modified;
-					modifiedFileList.Add (newEntry);
+					modifiedFileList.Add(newEntry);
 				}
 			}
 
 			// Else a new file must have been added
-			else 
+			else
 			{
+				Debug.Log("<LoadFiles> Added File Flagged! <File: " + entryPair.Key + ">");
 				newEntry = entryPair.Value;
 				newEntry.State = FileEntry.Status.Added;
-				modifiedFileList.Add (newEntry);
+				modifiedFileList.Add(newEntry);
 			}
 		}
 
 		// Check if a file does not exist anymore
-		foreach (string fileName in removedFileList) 
+		foreach (string fileName in removedFileList)
 		{
 			// If the file no longer exists in the most current file list, it was recently removed
-			if (!currentFileList.ContainsKey (fileName)) 
+			if (!currentFileList.ContainsKey(fileName))
 			{
 				if (LocalFileList.ContainsKey(fileName))
 				{
-					newEntry = LocalFileList [fileName];
+					Debug.Log("<LoadFiles> Removed File Flagged! <File: " + fileName + ">");
+					newEntry = LocalFileList[fileName];
 					newEntry.State = FileEntry.Status.Removed;
-					modifiedFileList.Add (newEntry);
+					modifiedFileList.Add(newEntry);
 				}
 			}
 		}
@@ -109,6 +111,7 @@ public static class LocalAssetLoader
 
 					else if (entry.State == FileEntry.Status.Removed) 
 					{
+						Debug.Log ("<CompareDictionaries> We deleted a file! <File: " + entry.FileName + ">");
 						if (File.Exists (entry.Path))
 							File.Delete (entry.Path);
 
@@ -125,7 +128,13 @@ public static class LocalAssetLoader
 	public static List<FileEntry> CompareDictionaries(Dictionary<string, FileEntry> LocalFileList, Dictionary<string, FileEntry> S3FileList)
 	{
 		if (S3FileList.Count == 0 && LocalFileList.Count == 0)
-			return null;
+        {
+            Debug.Log("I proc'd");
+            Debug.Log("S3FileList.Count: " + S3FileList.Count);
+            Debug.Log("LocalFileList.Count: " + LocalFileList.Count);
+            return null;
+        }
+
 
 		IEnumerable oldFiles = LocalFileList.Keys.Except (S3FileList.Keys).ToList();
 		List<string> removedFileList = oldFiles.Cast<string> ().ToList ();
@@ -142,9 +151,10 @@ public static class LocalAssetLoader
 				// Check if Local has Modified Versions
 				if (LocalFileList [entryPair.Key].State == FileEntry.Status.Modified)
 				{
-					// Add a new entry designating for Upload
+					Debug.Log ("<CompareDictionaries> Modified File Flagged! <File: " + entryPair.Key + ">");
+					// Add a new entry designating for Download <Was previously the logic for Uploading but due to an issue, Uploading is now redownloading the file.> 
 					newEntry = LocalFileList [entryPair.Key];
-					newEntry.State = FileEntry.Status.Upload;
+					newEntry.State = FileEntry.Status.Download;
 					modifiedFileList.Add (newEntry);
 
 					// Revert LocalFileList's status back to Unmodified
@@ -155,12 +165,12 @@ public static class LocalAssetLoader
 				// Check to see if Local has an undocumented Modified Version
 				if ((LocalFileList [entryPair.Key].FileSize != entryPair.Value.FileSize) && (LocalFileList [entryPair.Key].State != FileEntry.Status.Modified)) 
 				{
-					Debug.Log ("I ENTER THE SPECIAL IF STATEMENT!");
+					Debug.Log ("<CompareDictionaries> Undocumented Modified File Flagged! <File: " + entryPair.Key + ">");
 					// Add a new entry designating for Download
 					newEntry = entryPair.Value;
 					newEntry.State = FileEntry.Status.Download;
-					newEntry.Path = "C:\\Users\\Joshu\\Desktop\\S3LocalTest\\" + newEntry.FileName;
-					modifiedFileList.Add (newEntry);
+                    newEntry.Path = S3AssetStructure.CachePath + "\\" + newEntry.FileName;
+                    modifiedFileList.Add (newEntry);
 
 					// Revert LocalFileList's Status back to Unmodified
 					newEntry.State = FileEntry.Status.Unmodified;
@@ -169,12 +179,13 @@ public static class LocalAssetLoader
 			}
 
 			// Else the file exists on S3 and does not exist on Local
-			else if ((!LocalFileList.ContainsKey (entryPair.Key)) && (LocalFileList [entryPair.Key].State == FileEntry.Status.Modified)) 
+			else 
 			{
+				Debug.Log ("<CompareDictionaries> Added File Flagged! <File: " + entryPair.Key + ">");
 				// Add a new entry designating for Download
 				newEntry = entryPair.Value;
 				newEntry.State = FileEntry.Status.Download;
-				newEntry.Path = "C:\\Users\\Joshu\\Desktop\\S3LocalTest\\" + newEntry.FileName;
+				newEntry.Path = S3AssetStructure.CachePath + "\\"+ newEntry.FileName;
 				modifiedFileList.Add (newEntry);
 
 				// Revert LocalFileList's Status back to Unmodified
@@ -189,6 +200,7 @@ public static class LocalAssetLoader
 			// Sync up both S3 and Local by removing files that should not be there
 			if (!S3FileList.ContainsKey (fileName)) 
 			{
+				Debug.Log ("<CompareDictionaries> Removed File Flagged! <File: " + fileName + ">");
 				if (File.Exists (LocalFileList [fileName].Path))
 					File.Delete (LocalFileList [fileName].Path);
 				LocalFileList.Remove (fileName);
@@ -204,8 +216,8 @@ public static class LocalAssetLoader
 	{
 		//Directory.CreateDirectory (Application.persistentDataPath + "Dump");
 		//return Directory.GetFiles(Application.persistentDataPath + "Dump", "*.*", SearchOption.AllDirectories);
-		Directory.CreateDirectory("C:\\Users\\Joshu\\Desktop\\S3LocalTest");
-		return Directory.GetFiles ("C:\\Users\\Joshu\\Desktop\\S3LocalTest", "*.*");
+		Directory.CreateDirectory(S3AssetStructure.DirectoryPath);
+		return Directory.GetFiles (S3AssetStructure.DirectoryPath, "*.*");
 	}
 	#endregion
 }
