@@ -47,35 +47,21 @@ public static class S3AssetLoader
 
 		// There is a point of uncertainty here. I am not sure if the S3Filelist is populated correctly by this point.
 		// I am depending on the delegate for ListFiles to work correctly.
-		foreach (KeyValuePair<string, FileEntry> entryPair in S3AssetStructure.GetS3FileList())
-		{
-			// For now, We'll handle the cache system in here		
-			// If not null, there is at LEAST a single instance of a downloaded file.
-			if (S3AssetStructure.OnAsyncDownloaded != null)
-			{
-				foreach (string path in GetAllFilePaths(S3AssetStructure.CachePath))
-				{
-					//S3AssetStructure.OnAsyncDownloadedFile(Path.GetFileName(path));
-					if (File.Exists(path))
-					{
-                        Debug.Log("path inside loadfiles: " + path);
-						File.Copy(path, S3AssetStructure.DirectoryPath + "//" + Path.GetFileName(path), true);
-						File.Delete(path);
-					}
-				}
-			}
-		}
 
-		/*
-            Subscription issue.
-            Currently this ForEach loop will run through the same event call.
+        if (S3AssetStructure.OnAsyncDownloaded != null)
+        {
+            foreach (string path in GetAllFilePaths(S3AssetStructure.CachePath))
+            {
+                if (File.Exists(path))
+                {
+                    Debug.Log("path inside loadfiles: " + path);
+                    File.Copy(path, S3AssetStructure.DirectoryPath + "//" + Path.GetFileName(path), true);
+                    File.Delete(path);
+                }
+            }
 
-            we could bypass this by not using the OnAsyncDownloadFile.
-            Just using the OnAsyncDownloaded as a flag or call
-         */
-
-		if (S3AssetStructure.OnAsyncDownloaded != null)
-			S3AssetStructure.OnAsyncDownloaded = null;
+            S3AssetStructure.OnAsyncDownloaded = null;
+        }
 	}
 	#endregion
 
