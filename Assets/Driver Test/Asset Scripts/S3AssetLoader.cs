@@ -46,7 +46,7 @@ public static class S3AssetLoader
 			});
 
 		// There is a point of uncertainty here. I am not sure if the S3Filelist is populated correctly by this point.
-		// I am depending on the delegate for ListFiles to work correctly.
+		// I am depending on the delegate for S3FileList to work correctly. [See line 38]
 
         if (S3AssetStructure.OnAsyncDownloaded != null)
         {
