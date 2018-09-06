@@ -170,12 +170,14 @@ public class AWSPathStructure : Singleton<AWSPathStructure>
 			return AddFileEntrytoFileSystem (temporalPathEntry);
 		}
 
+		//Add This function inside of PathEntry...
 		public bool AddFileEntrytoFileSystem (PathEntry pathEntry)
 		{
 			FileIndex.Add (pathEntry.fileData.Path, pathEntry);
 			return AddFileEntrytoFileSystem (pathEntry, Root, pathEntry.fileData.Path);
 		}
 
+		//Add This function inside of PathEntry...
 		public bool AddFileEntrytoFileSystem (PathEntry pathEntry, PathEntry current, string currentPathRender)
 		{
 			
@@ -205,6 +207,7 @@ public class AWSPathStructure : Singleton<AWSPathStructure>
 			return GetDirectoryInFileSystem (Root, path);
 		}
 
+		//Add This function inside of PathEntry...
 		public PathEntry GetDirectoryInFileSystem(PathEntry current, string path) {
 			string[] temporalPathRender = path.Split (new char[] { '/' }, 2);
 			if (current.nextPath.ContainsKey (temporalPathRender [0])) {
