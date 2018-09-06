@@ -104,6 +104,8 @@ public class AWSPathStructure : Singleton<AWSPathStructure>
 		return textArray [textArray.Length - 1];
 	}
 
+
+	//Eventually separate to its own class...
 	public class PathEntry
 	{
 		public FileEntry fileData;
@@ -147,8 +149,7 @@ public class AWSPathStructure : Singleton<AWSPathStructure>
 		}
 	}
 
-
-
+	//Eventually separate to its own class...
 	public class FileSystem
 	{
 		
