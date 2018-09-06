@@ -11,20 +11,26 @@ namespace AssetStruct
 
 		public string FileName;
 		public string Path;
+		public string Url;
 		public long FileSize;
 		public Status State;
 		public DateTime ModifiedTime;
 		public DateTime CreationTime;
 
-		public FileEntry(string n = null, string p = null, long fs = -1, Status s = Status.Unmodified, DateTime mt = default(DateTime), DateTime ct = default(DateTime))
+		public FileEntry(string n, string p, string u, long fs, Status s, DateTime mt, DateTime ct)
 		{
 			FileName = n;
 			Path = p;
+			Url = u;
 			FileSize = fs;
 			State = s;
 			ModifiedTime = mt;
 			CreationTime = ct;
 		} // End Constructor
+
+		public FileEntry(string n = null, string p = null, long fs = -1, Status s = Status.Unmodified, DateTime mt = default(DateTime), DateTime ct = default(DateTime)) : this (n, p, null, fs, s, mt, ct)
+		{
+		} 
 
 		public static bool operator == (FileEntry fe1, FileEntry fe2)
 		{

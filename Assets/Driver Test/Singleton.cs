@@ -42,7 +42,7 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 			}
 		}
 
-		singletonObject.AddComponent<T> ();
+		//singletonObject.AddComponent<T> ();
 		instance = (T) FindObjectOfType(typeof(T));
 	}
 
