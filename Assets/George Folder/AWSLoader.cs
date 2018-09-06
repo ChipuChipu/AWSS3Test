@@ -31,7 +31,7 @@ public class AWSLoader {
 	private static IAmazonS3 _s3Client;
 
 	//Creation of event delegates to call when finished async.
-	public delegate void ResponseReceivedEvent(ListObjectsResponse responseObject, string bucketName);
+	public delegate void ResponseReceivedEvent(ListObjectsResponse responseObject, string bucketName, string s3Region);
 	public static ResponseReceivedEvent OnResponseReceived;
 
 	//=========================================================== Static Get/Set Functions =========================================================================
@@ -90,7 +90,7 @@ public class AWSLoader {
 		ResponseTime = DateTime.Now;
 
 		if (OnResponseReceived != null) {
-			OnResponseReceived (Response, _S3BucketName);
+			OnResponseReceived (Response, _S3BucketName, _S3Region);
 		}
 	}
 

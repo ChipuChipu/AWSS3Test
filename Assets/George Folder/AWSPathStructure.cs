@@ -70,7 +70,7 @@ public class AWSPathStructure : Singleton<AWSPathStructure>
 
 	}
 
-	public static void RenderAWSResponse (ListObjectsResponse responseObject, string S3BucketName)
+	public static void RenderAWSResponse (ListObjectsResponse responseObject, string S3BucketName, string S3Region)
 	{
 
 		AWSDirectory = new FileSystem ();
@@ -80,7 +80,7 @@ public class AWSPathStructure : Singleton<AWSPathStructure>
 		try {
 			responseObject.S3Objects.ForEach ((o) => {
 				Debug.Log ("Filename: " + o.Key);
-				FileEntry entry = new FileEntry (GetAssetName (o.Key), o.Key, GetURL (S3BucketName, o.Key), o.Size, FileEntry.Status.Unmodified, (DateTime)o.LastModified, (DateTime)o.LastModified);
+				FileEntry entry = new FileEntry (GetAssetName (o.Key), o.Key, GetURL (o.Key, S3BucketName, S3Region), o.Size, FileEntry.Status.Unmodified, (DateTime)o.LastModified, (DateTime)o.LastModified);
 				AWSDirectory.AddFileEntrytoFileSystem (entry);
 			});
 
@@ -93,9 +93,11 @@ public class AWSPathStructure : Singleton<AWSPathStructure>
 
 	}
 
-	public static string GetURL (string S3BucketName, string fileName)
+	public static string GetURL (string fileName, string S3BucketName, string S3Region)
 	{
-		return "https://s3.amazonaws.com//" + S3BucketName + "//" + fileName;
+		string urlText = fileName.Replace (' ', '+');
+		return "https://s3." + S3Region + ".amazonaws.com/" + S3BucketName + "/" + urlText;
+
 	}
 
 	public static string GetAssetName (string awsName)
