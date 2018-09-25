@@ -15,6 +15,89 @@ using AssetStruct;
 public static class S3AssetLoader 
 {
 
+	// Should add some checks to see if these locations actually exist
+	public static string DirectoryPath = "C:\\Users\\Joshu\\Desktop\\S3LocalTest";	// Local Directory used for checks. (Ignores all files not in the directory)
+	public static string CachePath = "C:\\Users\\Joshu\\Desktop\\S3LocalCache";		// Files currently being downloaded are stored in a temporary file called the Cache
+
+	public static string[] GetAllFilePaths()
+    {
+		GetAllFilePaths (DirectoryPath);
+    }
+
+    public static string[] GetAllFilePaths(string path)
+	{
+		Directory.CreateDirectory (path);
+		return Directory.GetFiles (path, "*.*");
+	}
+
+	public static void OnAsyncDownloadedFile(string fileName)
+	{
+		if (File.Exists(CachePath + fileName))
+		{
+			File.Copy(CachePath, DirectoryPath, true);
+			File.Delete(CachePath + fileName);	
+		}
+	}
+
+	public void LoadAWSAssetPathsIntoAWSPathStructure() {
+
+		AWSPathStructure.PathEntry s3AssetPaths = AWSPathStructure.AWSDirectory.GetDirectoryInFileSystem ("Assets");
+
+		Dictionary<string, FileEntry> s3AssetFileEntries = new Dictionary<string, FileEntry> ();
+
+		foreach (var assetPath in s3AssetPaths.nextPath) {
+			s3AssetFileEntries.Add (assetPath.Value.fileData.FileName, assetPath.Value.fileData);
+		}
+
+		S3AssetStructure.SetS3AssetDictionary (s3AssetFileEntries);
+
+	}
+
+	// Downloads and Uploads all files marked respectively in the LocalModifiedList from LocalAssetStructure
+	public static void S3UpdateLocalDirectory(List<FileEntry> LocalModifiedList)
+	{
+
+		if (LocalModifiedList.Count == 0 || LocalModifiedList == null)
+			return;
+
+		foreach (FileEntry entry in LocalModifiedList) 
+		{
+			if (entry.State == FileEntry.Status.Download) 
+			{
+				Debug.Log ("Downloading: " + entry.FileName + " || File State: " + entry.State + " || File Path: " + entry.Path);
+				S3GetObject (entry.Path, entry.FileName);		
+			}
+
+			/*
+			else if (entry.State == FileEntry.Status.Upload)
+			{
+				Debug.Log ("Uploading: " + entry.FileName + " || File State: " + entry.State);
+				S3PostFile (entry.Path, entry.FileName);
+			}
+		*/
+		}
+	}
+
+	//=================================================================================== Uploading files =======================================
+
+	// Uploads a single file from Local Directory onto the S3 Cloud
+	/*
+	public static void S3PostFile(string path, string fileName)
+	{
+		S3AssetLoader.PostFile (Client, S3BucketName, path, fileName);
+	}
+	#endregion
+
+	#region Extra Methods (Not Part of Core)
+	// Uploads every file in the specified location
+	public static void S3PostAllFiles()
+	{
+		S3AssetLoader.S3PostAllFiles (Client, S3BucketName);
+	}
+	#endregion
+	*/
+
+	//Moving Uploading into AWSLoader
 	#region S3 PostFiles
 	public static void S3PostAllFiles(IAmazonS3 Client, string S3BucketName)
 	{
@@ -22,24 +105,6 @@ public static class S3AssetLoader
 			PostFile (Client, S3BucketName, path, Path.GetFileName (path));
 	}
 	#endregion
-
-    public static string[] GetAllFilePaths()
-    {
-        //Directory.CreateDirectory (Application.persistentDataPath + "Dump");
-        //return Directory.GetFiles(Application.persistentDataPath + "Dump", "*.*", SearchOption.AllDirectories);
-
-        Directory.CreateDirectory(S3AssetStructure.DirectoryPath);
-        return Directory.GetFiles(S3AssetStructure.DirectoryPath, "*.*");
-    }
-
-    public static string[] GetAllFilePaths(string path)
-	{
-		//Directory.CreateDirectory (Application.persistentDataPath + "Dump");
-		//return Directory.GetFiles(Application.persistentDataPath + "Dump", "*.*", SearchOption.AllDirectories);
-
-		Directory.CreateDirectory (path);
-		return Directory.GetFiles (path, "*.*");
-	}
 
 	public static void PostFile(IAmazonS3 Client, string S3BucketName, string filePath, string fileName)
 	{
