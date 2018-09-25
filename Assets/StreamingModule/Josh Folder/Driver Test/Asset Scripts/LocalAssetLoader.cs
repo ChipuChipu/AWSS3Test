@@ -38,6 +38,8 @@ public static class LocalAssetLoader
 	}
 	#endregion
 
+	//========================================================= File Sorting ========================================================================
+
 	#region Load Files
 	// Generates a list of files that contain all modified files.
 	public static List<FileEntry> LoadFiles(Dictionary<string, FileEntry> LocalFileList)
@@ -94,46 +96,17 @@ public static class LocalAssetLoader
 	}
 	#endregion
 
-	#region Update FileList
-	public static void UpdateFileList(List<FileEntry> modifiedFileList, Dictionary<string, FileEntry> LocalFileList)
-	{
-		if (modifiedFileList.Count != 0 && modifiedFileList != null) 
-		{
-			foreach (FileEntry entry in modifiedFileList) 
-			{
-				if (LocalFileList.ContainsKey (entry.FileName)) 
-				{
-					if (entry.State == FileEntry.Status.Modified)
-						LocalFileList [entry.FileName] = entry;
-
-					else if (entry.State == FileEntry.Status.Added)
-						LocalFileList [entry.FileName] = entry;
-
-					else if (entry.State == FileEntry.Status.Removed) 
-					{
-						Debug.Log ("<CompareDictionaries> We deleted a file! <File: " + entry.FileName + ">");
-						if (File.Exists (entry.Path))
-							File.Delete (entry.Path);
-
-						LocalFileList.Remove (entry.FileName);
-					}
-				}
-			}			
-		}
-	}
-	#endregion
-
 	#region Compare Dictionaries
 	// Creates a list 
 	public static List<FileEntry> CompareDictionaries(Dictionary<string, FileEntry> LocalFileList, Dictionary<string, FileEntry> S3FileList)
 	{
 		if (S3FileList.Count == 0 && LocalFileList.Count == 0)
-        {
-            Debug.Log("I proc'd");
-            Debug.Log("S3FileList.Count: " + S3FileList.Count);
-            Debug.Log("LocalFileList.Count: " + LocalFileList.Count);
-            return null;
-        }
+		{
+			Debug.Log("I proc'd");
+			Debug.Log("S3FileList.Count: " + S3FileList.Count);
+			Debug.Log("LocalFileList.Count: " + LocalFileList.Count);
+			return null;
+		}
 
 
 		IEnumerable oldFiles = LocalFileList.Keys.Except (S3FileList.Keys).ToList();
@@ -169,8 +142,8 @@ public static class LocalAssetLoader
 					// Add a new entry designating for Download
 					newEntry = entryPair.Value;
 					newEntry.State = FileEntry.Status.Download;
-                    newEntry.Path = S3AssetStructure.CachePath + "\\" + newEntry.FileName;
-                    modifiedFileList.Add (newEntry);
+					newEntry.Path = S3AssetStructure.CachePath + "\\" + newEntry.FileName;
+					modifiedFileList.Add (newEntry);
 
 					// Revert LocalFileList's Status back to Unmodified
 					newEntry.State = FileEntry.Status.Unmodified;
@@ -211,11 +184,43 @@ public static class LocalAssetLoader
 	}
 	#endregion
 
+	//================================================================================================================================
+
+	//================================================== File Deletion / Update ======================================================
+	#region Update FileList
+	public static void UpdateFileList(List<FileEntry> modifiedFileList, Dictionary<string, FileEntry> LocalFileList)
+	{
+		if (modifiedFileList.Count != 0 && modifiedFileList != null) 
+		{
+			foreach (FileEntry entry in modifiedFileList) 
+			{
+				if (LocalFileList.ContainsKey (entry.FileName)) 
+				{
+					if (entry.State == FileEntry.Status.Modified)
+						LocalFileList [entry.FileName] = entry;
+
+					else if (entry.State == FileEntry.Status.Added)
+						LocalFileList [entry.FileName] = entry;
+
+					else if (entry.State == FileEntry.Status.Removed) 
+					{
+						Debug.Log ("<CompareDictionaries> We deleted a file! <File: " + entry.FileName + ">");
+						if (File.Exists (entry.Path))
+							File.Delete (entry.Path);
+
+						LocalFileList.Remove (entry.FileName);
+					}
+				}
+			}			
+		}
+	}
+	#endregion
+
+	//===============================================================================================================================
+
 	#region Helper Functions
 	public static string[] GetAllFilePaths()
 	{
-		//Directory.CreateDirectory (Application.persistentDataPath + "Dump");
-		//return Directory.GetFiles(Application.persistentDataPath + "Dump", "*.*", SearchOption.AllDirectories);
 		Directory.CreateDirectory(S3AssetStructure.DirectoryPath);
 		return Directory.GetFiles (S3AssetStructure.DirectoryPath, "*.*");
 	}

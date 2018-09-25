@@ -150,12 +150,6 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 		}
 	}
 
-	// Downloads a single object from S3 onto the Local Directory
-	public static void S3GetObject(string destinationPath, string fileName)
-	{
-		S3AssetLoader.GetObject (Client, S3BucketName, destinationPath, fileName);
-	}
-
 	// Uploads a single file from Local Directory onto the S3 Cloud
 	public static void S3PostFile(string path, string fileName)
 	{
