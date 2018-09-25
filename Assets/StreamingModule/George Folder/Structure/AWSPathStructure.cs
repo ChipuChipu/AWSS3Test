@@ -2,32 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using AssetStruct;
 using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
 using Amazon.Runtime;
 using Amazon.CognitoIdentity;
-using AssetStruct;
 
 public class AWSPathStructure : Singleton<AWSPathStructure>
 {
 
-	/*
-	public void Start() {
-		FileSystem test = new FileSystem ();
-		FileEntry test1 = new FileEntry ("test1", "A/B/test1");
-		FileEntry test2 = new FileEntry ("test2", "A/C/test2");
-		FileEntry test3 = new FileEntry ("test3", "A/B/test3");
-		FileEntry test4 = new FileEntry ("test4", "B/B/test4");
-		test.AddFileEntrytoFileSystem (test1);
-		test.AddFileEntrytoFileSystem (test2);
-		test.AddFileEntrytoFileSystem (test3);
-		test.AddFileEntrytoFileSystem (test4);
-		test.DisplayFilesOnDirectory ();
+	[RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType.AfterSceneLoad)]
+	public static void InitializeStructure()
+	{
+		InitializeSingleton();
 	}
-	*/
 
 	public delegate void RetrievedDirectoryEvent (FileSystem directory);
 
@@ -80,7 +69,7 @@ public class AWSPathStructure : Singleton<AWSPathStructure>
 		try {
 			responseObject.S3Objects.ForEach ((o) => {
 				Debug.Log ("Filename: " + o.Key);
-				FileEntry entry = new FileEntry (GetAssetName (o.Key), o.Key, GetURL (o.Key, S3BucketName, S3Region), o.Size, FileEntry.Status.Unmodified, (DateTime)o.LastModified, (DateTime)o.LastModified);
+				FileEntry entry = new FileEntry (GetAssetName (o.Key), o.Key, GetURL (o.Key, S3BucketName, S3Region), o.Size, FileEntry.Status.Unmodified, FileEntry.Source.Cloud, (DateTime)o.LastModified, (DateTime)o.LastModified);
 				AWSDirectory.AddFileEntrytoFileSystem (entry);
 			});
 
@@ -189,12 +178,14 @@ public class AWSPathStructure : Singleton<AWSPathStructure>
 
 			if (temporalPathRender.Length > 1) {
 				if (!current.nextPath.ContainsKey (temporalPathRender [0])) {
+					//Debug.Log (temporalPathRender[0]);
 					current.nextPath.Add (temporalPathRender [0], new PathEntry (temporalPathRender [0], current));
 				}
 				return AddFileEntrytoFileSystem (pathEntry, current.nextPath [temporalPathRender [0]], temporalPathRender [1]);
 			} else {
 				//This is to render the paths but not the empty field.
 				if (temporalPathRender[0] != "") {
+					//Debug.Log (temporalPathRender[0]);
 					return current.AddPathEntry (pathEntry);
 				} else {
 					return false;

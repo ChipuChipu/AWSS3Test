@@ -10,11 +10,18 @@ using Amazon.S3.Model;
 using Amazon.S3.Util;
 using Amazon.Runtime;
 using Amazon.CognitoIdentity;
-using AssetStruct;
 
 public class AWSLoader {
 	
 	//Bucket ID and S3 Information
+
+	/*
+	 * public static string _S3BucketName = "armediacontentff";
+	public static string _IdentityPoolId = "us-east-2:f76cc60a-2a14-4510-a808-b09d833de5f5";
+	public static string _CognitoIdentityRegion = "us-east-2";
+	public static string _S3Region = "us-east-2";
+	*/
+
 	public static string _S3BucketName = "armediacontent";
 	public static string _IdentityPoolId = "us-east-2:78d08b49-d0ce-48e1-a7a6-b84b7a64a40e";
 	public static string _CognitoIdentityRegion = "us-east-2";
@@ -33,6 +40,10 @@ public class AWSLoader {
 	//Creation of event delegates to call when finished async.
 	public delegate void ResponseReceivedEvent(ListObjectsResponse responseObject, string bucketName, string s3Region);
 	public static ResponseReceivedEvent OnResponseReceived;
+
+	//Creation of event delegate when finished downloading
+	public delegate void FinishedDownloadEvent(FileEntry file);
+	public static FinishedDownloadEvent OnDownloadFinished;
 
 	//=========================================================== Static Get/Set Functions =========================================================================
 
@@ -103,4 +114,62 @@ public class AWSLoader {
 	public static void UnsubscribeOnResponseReceived (ResponseReceivedEvent callback) {
 		OnResponseReceived -= callback;
 	}
+
+	//============================================================ File Downloading =====================================================================
+
+	public static void S3GetObjects(FileEntry file) {
+		S3GetObjects (s3Client, _S3BucketName, file);
+	}
+
+	public static void S3GetObjects(IAmazonS3 Client, string S3BucketName, FileEntry file)
+	{
+		GetObject(Client, S3BucketName, file);
+
+	}
+
+	//Download functions
+	public static void S3GetObjects(IAmazonS3 Client, string S3BucketName, List<FileEntry> ModifiedLocalFileList)
+	{
+		foreach (FileEntry entry in ModifiedLocalFileList) 
+		{
+			GetObject(Client, S3BucketName, entry);
+		}
+
+	}
+
+	static void GetObject(IAmazonS3 Client, string S3BucketName, FileEntry file)
+	{
+		try
+		{
+			Client.GetObjectAsync (S3BucketName, file.Path, (responseObj) => 
+				{
+					var response = responseObj.Response;
+
+					Debug.Log("Downloading...");
+					Debug.Log(Application.persistentDataPath + "/" + file.FileName);
+					if (response.ResponseStream != null)
+					{
+						using (var fs = File.Create(Application.persistentDataPath + "/" + file.FileName))
+						{
+							Debug.Log("Buffer...");
+							byte[] buffer = new byte[10000000];
+							int count = 0;
+							while ((count = response.ResponseStream.Read(buffer, 0, buffer.Length)) != 0)
+								fs.Write(buffer, 0, count);
+							fs.Flush();
+						}
+
+						if (OnDownloadFinished != null) {
+							OnDownloadFinished(file);
+						}
+					}
+				});					
+		}
+
+		catch (Exception e)
+		{
+			Debug.Log ("Exception in PostFile: " + e.Message);
+		}
+	}
+
 }

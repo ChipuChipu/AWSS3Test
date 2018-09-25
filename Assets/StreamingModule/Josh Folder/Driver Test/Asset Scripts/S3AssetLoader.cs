@@ -15,6 +15,7 @@ using AssetStruct;
 public static class S3AssetLoader 
 {
 	#region S3 LoadObjects
+	/*
 	public static void S3LoadObjects(IAmazonS3 Client, string S3BucketName)
 	{   
 		Dictionary<string, FileEntry> FileList = new Dictionary<string, FileEntry> ();
@@ -63,6 +64,7 @@ public static class S3AssetLoader
             S3AssetStructure.OnAsyncDownloaded = null;
         }
 	}
+	*/
 	#endregion
 
 	#region S3 GetObjects

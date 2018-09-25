@@ -29,21 +29,24 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 	}
 
 	public static void InitializeSingleton () {
-		if (singletonObject == null) {
-			singletonObject = GameObject.Find ("Singletons");
 
+		if (ApplicationSettings.InitializeSingletons) {
 			if (singletonObject == null) {
-				singletonObject = new GameObject ("Singletons");
-				DontDestroyOnLoad (singletonObject);
+				singletonObject = GameObject.Find ("Singletons");
 
 				if (singletonObject == null) {
-					Debug.LogError ("The application could not initialize the singleton object.");
+					singletonObject = new GameObject ("Singletons");
+					DontDestroyOnLoad (singletonObject);
+
+					if (singletonObject == null) {
+						Debug.LogError ("The application could not initialize the singleton object.");
+					}
 				}
 			}
+				
+			instance = singletonObject.AddComponent<T> ();
 		}
 
-		//singletonObject.AddComponent<T> ();
-		instance = (T) FindObjectOfType(typeof(T));
 	}
 
 }

@@ -122,7 +122,7 @@ public class S3AssetStructure : Singleton<S3AssetStructure>
 	// Populates S3AssetStructure's FileList will all existing objects on the S3 Bucket
 	public static void LoadObjects()
 	{
-		S3AssetLoader.S3LoadObjects (Client, S3BucketName);
+		//S3AssetLoader.S3LoadObjects (Client, S3BucketName);
 	}
 
 	// Downloads and Uploads all files marked respectively in the LocalModifiedList from LocalAssetStructure
