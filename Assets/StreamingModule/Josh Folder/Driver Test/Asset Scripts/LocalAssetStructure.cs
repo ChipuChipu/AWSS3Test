@@ -115,6 +115,7 @@ public class LocalAssetStructure : Singleton<LocalAssetStructure>
 			// Else the file exists on S3 and does not exist on Local
 			else 
 			{
+				/*
 				Debug.Log ("<CompareDictionaries> Added File Flagged! <File: " + entryPair.Key + ">");
 				// Add a new entry designating for Download
 				newEntry = entryPair.Value;
@@ -125,6 +126,7 @@ public class LocalAssetStructure : Singleton<LocalAssetStructure>
 				// Revert LocalFileList's Status back to Unmodified
 				newEntry.State = FileEntry.Status.Unmodified;
 				LocalFileList [entryPair.Key] = newEntry;
+				*/
 			}
 		}
 

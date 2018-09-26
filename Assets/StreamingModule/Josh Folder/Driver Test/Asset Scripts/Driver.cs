@@ -12,6 +12,9 @@ using AssetStruct;
 
 public class Driver : MonoBehaviour 
 {
+	public bool downloadFile;
+	public string path;
+
 	void Start()
 	{
 		//UnityInitializer.AttachToGameObject (this.gameObject);
@@ -23,6 +26,14 @@ public class Driver : MonoBehaviour
 		AWSPathStructure.OnRetrievedDirectory += new AWSPathStructure.RetrievedDirectoryEvent (startCheck);
 		AWSLoader.OnDownloadFinished += new AWSLoader.FinishedDownloadEvent(S3AssetLoader.OnAsyncDownloadedFile);
 
+	}
+
+	void Update() {
+		if (downloadFile) {
+			//Downlaod it and put the file on sync on the cache path...
+			AWSLoader.S3GetObjects (S3AssetStructure.GetS3FileList()[path], S3AssetLoader.CachePath);
+			downloadFile = false;
+		}
 	}
 
 	void startCheck(AWSPathStructure.FileSystem files)
