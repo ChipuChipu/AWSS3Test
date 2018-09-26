@@ -25,11 +25,13 @@ public static class S3AssetLoader
 	}
 
 	public static void OnAsyncDownloadedFile(FileEntry file) {
-		OnAsyncDownloadedFile (file.FileName);
+		Debug.Log ("OnAsyncDownloadedFile" + file.FileName);
+		OnAsyncDownloaded (file.FileName);
 	}
 
-	public static void OnAsyncDownloadedFile(string fileName)
+	public static void OnAsyncDownloaded(string fileName)
 	{
+		Debug.Log (CachePath + fileName);
 		if (File.Exists(CachePath + fileName))
 		{
 			File.Copy(CachePath, LocalAssetLoader.DirectoryPath, true);

@@ -153,6 +153,7 @@ public class AWSLoader {
 
 					Debug.Log("Downloading...");
 					Debug.Log(downloadDirectory + file.FileName);
+					//This can fail if its not public, if the link is invalid.
 					if (response.ResponseStream != null)
 					{
 						Debug.Log("RESPONSE");
@@ -166,7 +167,9 @@ public class AWSLoader {
 							fs.Flush();
 						}
 
+						Debug.Log("Stuff1");
 						if (OnDownloadFinished != null) {
+							Debug.Log("Stuff2");
 							OnDownloadFinished(file);
 						}
 					}
