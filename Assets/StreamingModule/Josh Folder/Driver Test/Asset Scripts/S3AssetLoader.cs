@@ -26,15 +26,16 @@ public static class S3AssetLoader
 
 	public static void OnAsyncDownloadedFile(FileEntry file) {
 		Debug.Log ("OnAsyncDownloadedFile" + file.FileName);
-		OnAsyncDownloaded (file.FileName);
+		OnAsyncDownloadedFile (file.FileName);
 	}
 
-	public static void OnAsyncDownloaded(string fileName)
+	public static void OnAsyncDownloadedFile(string fileName)
 	{
 		Debug.Log (CachePath + fileName);
+		Debug.Log (File.Exists(CachePath + fileName));
 		if (File.Exists(CachePath + fileName))
 		{
-			File.Copy(CachePath, LocalAssetLoader.DirectoryPath, true);
+			File.Copy(CachePath + fileName, LocalAssetLoader.DirectoryPath + fileName, true);
 			File.Delete(CachePath + fileName);
 		}
 	}
