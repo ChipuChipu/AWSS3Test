@@ -118,26 +118,32 @@ public class AWSLoader {
 	//============================================================ File Downloading =====================================================================
 
 	public static void S3GetObjects(FileEntry file) {
-		S3GetObjects (s3Client, _S3BucketName, file);
+		S3GetObjects (s3Client, _S3BucketName, file, Application.persistentDataPath + "/");
 	}
 
-	public static void S3GetObjects(IAmazonS3 Client, string S3BucketName, FileEntry file)
-	{
-		GetObject(Client, S3BucketName, file);
+	public static void S3GetObjects(FileEntry file, string downloadDirectory) {
+		S3GetObjects (s3Client, _S3BucketName, file, downloadDirectory);
+	}
 
+	public static void S3GetObjects(IAmazonS3 Client, string S3BucketName, FileEntry file, string downloadDirectory)
+	{
+		GetObject(Client, S3BucketName, file, downloadDirectory);
+	}
+
+	public static void S3GetObjects(IAmazonS3 Client, string S3BucketName, List<FileEntry> ModifiedLocalFileList) {
+		S3GetObjects (Client, S3BucketName, ModifiedLocalFileList, Application.persistentDataPath + "/");
 	}
 
 	//Download functions
-	public static void S3GetObjects(IAmazonS3 Client, string S3BucketName, List<FileEntry> ModifiedLocalFileList)
+	public static void S3GetObjects(IAmazonS3 Client, string S3BucketName, List<FileEntry> ModifiedLocalFileList, string downloadDirectory)
 	{
 		foreach (FileEntry entry in ModifiedLocalFileList) 
 		{
-			GetObject(Client, S3BucketName, entry);
+			GetObject(Client, S3BucketName, entry, downloadDirectory);
 		}
-
 	}
 
-	static void GetObject(IAmazonS3 Client, string S3BucketName, FileEntry file)
+	static void GetObject(IAmazonS3 Client, string S3BucketName, FileEntry file, string downloadDirectory)
 	{
 		try
 		{
@@ -146,10 +152,11 @@ public class AWSLoader {
 					var response = responseObj.Response;
 
 					Debug.Log("Downloading...");
-					Debug.Log(Application.persistentDataPath + "/" + file.FileName);
+					Debug.Log(downloadDirectory + file.FileName);
 					if (response.ResponseStream != null)
 					{
-						using (var fs = File.Create(Application.persistentDataPath + "/" + file.FileName))
+						Debug.Log("RESPONSE");
+						using (var fs = File.Create(downloadDirectory + file.FileName))
 						{
 							Debug.Log("Buffer...");
 							byte[] buffer = new byte[10000000];

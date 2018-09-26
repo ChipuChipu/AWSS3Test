@@ -16,13 +16,7 @@ public static class S3AssetLoader
 {
 
 	// Should add some checks to see if these locations actually exist
-	public static string DirectoryPath = "C:\\Users\\Joshu\\Desktop\\S3LocalTest";	// Local Directory used for checks. (Ignores all files not in the directory)
-	public static string CachePath = "C:\\Users\\Joshu\\Desktop\\S3LocalCache";		// Files currently being downloaded are stored in a temporary file called the Cache
-
-	public static string[] GetAllFilePaths()
-    {
-		GetAllFilePaths (DirectoryPath);
-    }
+	public static string CachePath = Application.persistentDataPath + "/S3LocalCache/";		// Files currently being downloaded are stored in a temporary file called the Cache
 
     public static string[] GetAllFilePaths(string path)
 	{
@@ -30,16 +24,20 @@ public static class S3AssetLoader
 		return Directory.GetFiles (path, "*.*");
 	}
 
+	public static void OnAsyncDownloadedFile(FileEntry file) {
+		OnAsyncDownloadedFile (file.FileName);
+	}
+
 	public static void OnAsyncDownloadedFile(string fileName)
 	{
 		if (File.Exists(CachePath + fileName))
 		{
-			File.Copy(CachePath, DirectoryPath, true);
-			File.Delete(CachePath + fileName);	
+			File.Copy(CachePath, LocalAssetLoader.DirectoryPath, true);
+			File.Delete(CachePath + fileName);
 		}
 	}
 
-	public void LoadAWSAssetPathsIntoAWSPathStructure() {
+	public static void LoadAWSAssetPathsIntoAWSPathStructure() {
 
 		AWSPathStructure.PathEntry s3AssetPaths = AWSPathStructure.AWSDirectory.GetDirectoryInFileSystem ("Assets");
 
@@ -57,6 +55,8 @@ public static class S3AssetLoader
 	public static void S3UpdateLocalDirectory(List<FileEntry> LocalModifiedList)
 	{
 
+		Directory.CreateDirectory (CachePath);
+
 		if (LocalModifiedList.Count == 0 || LocalModifiedList == null)
 			return;
 
@@ -65,17 +65,10 @@ public static class S3AssetLoader
 			if (entry.State == FileEntry.Status.Download) 
 			{
 				Debug.Log ("Downloading: " + entry.FileName + " || File State: " + entry.State + " || File Path: " + entry.Path);
-				S3GetObject (entry.Path, entry.FileName);		
+				AWSLoader.S3GetObjects (entry, CachePath);		
 			}
-
-			/*
-			else if (entry.State == FileEntry.Status.Upload)
-			{
-				Debug.Log ("Uploading: " + entry.FileName + " || File State: " + entry.State);
-				S3PostFile (entry.Path, entry.FileName);
-			}
-		*/
 		}
+
 	}
 
 	//=================================================================================== Uploading files =======================================
@@ -99,12 +92,13 @@ public static class S3AssetLoader
 
 	//Moving Uploading into AWSLoader
 	#region S3 PostFiles
+	/*
 	public static void S3PostAllFiles(IAmazonS3 Client, string S3BucketName)
 	{
 		foreach (string path in GetAllFilePaths())
 			PostFile (Client, S3BucketName, path, Path.GetFileName (path));
 	}
-	#endregion
+	*/
 
 	public static void PostFile(IAmazonS3 Client, string S3BucketName, string filePath, string fileName)
 	{

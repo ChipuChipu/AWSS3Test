@@ -103,7 +103,7 @@ public class LocalAssetStructure : Singleton<LocalAssetStructure>
 					// Add a new entry designating for Download
 					newEntry = entryPair.Value;
 					newEntry.State = FileEntry.Status.Download;
-					newEntry.Path = S3AssetStructure.CachePath + "\\" + newEntry.FileName;
+					//newEntry.Path = S3AssetStructure.CachePath + "\\" + newEntry.FileName;
 					modifiedFileList.Add (newEntry);
 
 					// Revert LocalFileList's Status back to Unmodified
@@ -119,7 +119,7 @@ public class LocalAssetStructure : Singleton<LocalAssetStructure>
 				// Add a new entry designating for Download
 				newEntry = entryPair.Value;
 				newEntry.State = FileEntry.Status.Download;
-				newEntry.Path = S3AssetStructure.CachePath + "\\"+ newEntry.FileName;
+				//newEntry.Path = S3AssetStructure.CachePath + "\\"+ newEntry.FileName;
 				modifiedFileList.Add (newEntry);
 
 				// Revert LocalFileList's Status back to Unmodified

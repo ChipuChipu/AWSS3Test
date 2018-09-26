@@ -11,6 +11,8 @@ using AssetStruct;
 public static class LocalAssetLoader
 {
 
+	public static string DirectoryPath = Application.persistentDataPath + "/S3LocalTest/";	// Local Directory used for checks. (Ignores all files not in the directory)
+
 	public static void InitializeFiles()
 	{
 		LocalAssetStructure.SetLocalFileList (InitializeFileList ());
@@ -46,9 +48,13 @@ public static class LocalAssetLoader
 
 	//========================================================= File Sorting ========================================================================
 
-	public static void GetModifiedFiles()
+	public static void UpdateModifiedFilesToLocalAssetStructure () {
+		LocalAssetStructure.SetModifiedList (GetModifiedFiles());
+	}
+
+	public static List<FileEntry> GetModifiedFiles()
 	{
-		LocalAssetStructure.SetModifiedList (LoadFiles (LocalAssetStructure.GetLocalFileList()));
+		return LoadFiles (LocalAssetStructure.GetLocalFileList());
 	}
 
 	#region Load Files
@@ -150,8 +156,8 @@ public static class LocalAssetLoader
 	#region Helper Functions
 	public static string[] GetAllFilePaths()
 	{
-		Directory.CreateDirectory(S3AssetStructure.DirectoryPath);
-		return Directory.GetFiles (S3AssetStructure.DirectoryPath, "*.*");
+		Directory.CreateDirectory(DirectoryPath);
+		return Directory.GetFiles (DirectoryPath, "*.*");
 	}
 	#endregion
 }
