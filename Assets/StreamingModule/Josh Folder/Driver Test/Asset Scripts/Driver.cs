@@ -17,12 +17,7 @@ public class Driver : MonoBehaviour
 
 	void Start()
 	{
-		//UnityInitializer.AttachToGameObject (this.gameObject);
-		//AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
-
-		//ThreadedLocalS3.Start ();
-		//StartCoroutine(startCheck());
-
+		
 		AWSPathStructure.OnRetrievedDirectory += new AWSPathStructure.RetrievedDirectoryEvent (startCheck);
 		AWSLoader.OnDownloadFinished += new AWSLoader.FinishedDownloadEvent(S3AssetLoader.OnAsyncDownloadedFile);
 

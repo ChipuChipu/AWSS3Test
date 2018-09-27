@@ -279,6 +279,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b27c6f87ab36c18418e6a4a5195d6d1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  downloadFile: 0
+  path: 
 --- !u!4 &1161359944
 Transform:
   m_ObjectHideFlags: 0
