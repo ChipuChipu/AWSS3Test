@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class FileSyncManager : Singleton<FileSyncManager> {
 
@@ -12,8 +13,21 @@ public class FileSyncManager : Singleton<FileSyncManager> {
 
 	void Awake()
 	{
+		ClearCacheFolder ();
+
 		AWSPathStructure.OnRetrievedDirectory += new AWSPathStructure.RetrievedDirectoryEvent (startCheck);
 		AWSLoader.OnDownloadFinished += new AWSLoader.FinishedDownloadEvent(S3AssetLoader.OnAsyncDownloadedFile);
+	}
+
+	void ClearCacheFolder () {
+		if (Directory.Exists (S3AssetLoader.CachePath)) {
+			Debug.Log ("Clearing cache...");
+			string[] files = Directory.GetFiles (S3AssetLoader.CachePath);
+			foreach (var txt in files) {
+				Debug.Log ("Removed file from cache... " + txt);
+				File.Delete (txt);
+			}
+		}		
 	}
 
 	void startCheck(AWSPathStructure.FileSystem files)
